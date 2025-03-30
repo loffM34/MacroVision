@@ -1,4 +1,5 @@
 // components/NutritionSearch.tsx
+"use client";
 import { useState } from "react";
 
 type Nutrient = {
@@ -17,24 +18,29 @@ export default function NutritionSearch() {
   const [query, setQuery] = useState("");
   const [result, setResult] = useState<Food | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const handleSearch = async () => {
     setError(null);
     setResult(null);
+    setLoading(true);
 
+    const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=4nocG4ecRrNsudAmboxE5m7cBDfEtVbd6bdmHyBG&query=${query}&pageSize=1`;
+    console.log(query);
     try {
-      const res = await fetch(
-        `/api/search-food?query=${encodeURIComponent(query)}`
-      );
-      const data = await res.json();
+      const response = await fetch(url);
+      const data = await response.json();
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to fetch");
+      if (!data.foods || data.foods.length === 0) {
+        setError("No foods found");
+      } else {
+        setResult(data.foods[0]);
       }
-
-      setResult(data);
     } catch (err: any) {
-      setError(err.message);
+      console.error(err);
+      setError("Error fetching food data");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,8 +57,9 @@ export default function NutritionSearch() {
       <button
         onClick={handleSearch}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        disabled={loading}
       >
-        Search
+        {loading ? "Searching..." : "Search"}
       </button>
 
       {error && <p className="text-red-600 mt-2">{error}</p>}
