@@ -1,0 +1,2 @@
+1) (running api)python -m uvicorn main:app --reload
+2) (running frontend) npm run dev 
