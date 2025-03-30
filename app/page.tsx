@@ -16,17 +16,17 @@ export default function Page() {
     fiber: string;
   } | null>(null);
 
+  // Handle image upload and store the image URL in localStorage
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setImage(URL.createObjectURL(file));
-      setNutritionData({
-        calories: 520,
-        protein: "24g",
-        carbs: "58g",
-        fat: "22g",
-        fiber: "7g",
-      });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const imageUrl = reader.result as string;
+        setImage(imageUrl);
+        localStorage.setItem("uploadedImage", imageUrl); // Store the image URL in localStorage
+      };
+      reader.readAsDataURL(file);
     }
   };
 
