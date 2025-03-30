@@ -1,4 +1,4 @@
-# Marcovision: AI-Powered Food Recognition & Nutrition Tracker
+# Macrovision: AI-Powered Food Recognition & Nutrition Tracker
 
 **Marcovision** is a full-stack web app developed during a hackathon that leverages AI and computer vision to analyze meals from user-uploaded photos. By training a custom food classification model using the USDA food database, Marcovision identifies food items and provides detailed nutritional facts. Users can sign up, analyze meals, and track their nutritional data through a clean and responsive UI.
 
