@@ -14,9 +14,9 @@
 
 ### Frontend
 - **Next.js** (React Framework)
-- **React** (with Hooks)
-- **TailwindCSS** or custom styling (optional — add what you used)
-- **TypeScript** (if applicable)
+- **React** 
+- **TailwindCSS**
+- * TypeScript** 
 
 ### Backend & Services
 - **Supabase**
@@ -28,10 +28,8 @@
   - Classifies food from images and retrieves associated nutritional values
 
 ### Machine Learning
-- **Model Type:** Image classification (CNN or other architecture)
-- **Training Data:** USDA Food Dataset
-- **Deployment:** (If hosted separately or in-app via API, mention this)
-
+- **Model Type:** Image classification (CNN)
+- **Training Data:** USDA Food Dataset & Food101 dataset
 ## How It Works
 
 1. User logs in or signs up via Supabase.
