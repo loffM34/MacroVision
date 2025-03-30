@@ -132,9 +132,7 @@ export default function Home() {
                 Nutrition Facts
               </h3>
 
-              <div className="text-sm font-semibold mb-1">
-                Serving Size 1 meal
-              </div>
+              <div className="text-sm font-semibold mb-1"></div>
               <div className="border-b border-black my-1"></div>
 
               <div className="text-sm font-semibold mb-1">
