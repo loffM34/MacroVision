@@ -128,6 +128,7 @@ export default function Page() {
                 </div>
               </CardContent>
             </Card>
+            
             <div>
               <div className="flex justify-center gap-10 mt-10">
                 <Button onClick={(e) => setShowLoginMessage(true)}>
@@ -139,6 +140,7 @@ export default function Page() {
                 <div className="text-center mt-5">Login to save your meal!</div>
               )}
             </div>
+            
           </div>
         )}
       </div>

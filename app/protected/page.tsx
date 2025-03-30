@@ -8,6 +8,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { uploadMealImage } from "@/lib/uploadMealImage";
 import { storeMeal } from "@/lib/storeMeal";
 import { useRouter } from "next/navigation";
+import { Link } from "lucide-react";
 
 export default function Page() {
   const router = useRouter();
@@ -150,15 +151,6 @@ export default function Page() {
                     <strong>Protein:</strong> {nutritionData.protein}
                   </li>
                 </ul>
-
-                <div className="border-t border-black mt-4 pt-2">
-                  <Button
-                    onClick={handleFitGoals}
-                    className="mt-4 bg-black text-white hover:bg-gray-800"
-                  >
-                    Make This Fit My Goals
-                  </Button>
-                </div>
               </CardContent>
             </Card>
 
