@@ -1,5 +1,5 @@
 "use client";
-
+//Home Page
 import { useState, useEffect } from "react";
 import { fetchNutritionData } from "@/components/NutritionSearch";
 import { UploadCloud, Loader2, Utensils } from "lucide-react";
