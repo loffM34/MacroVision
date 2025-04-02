@@ -1,149 +1,163 @@
 "use client";
 
-import React, { useState } from "react";
-import { Card } from "@/components/ui/card/card";
-import { CardContent } from "@/components/ui/card/cardcontent";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { fetchNutritionData } from "@/components/NutritionSearch";
+import { UploadCloud, Loader2, Utensils } from "lucide-react";
 
-export default function Page() {
-  const [image, setImage] = useState<string | null>(null);
-  const [showLoginMessage, setShowLoginMessage] = useState(false);
-  const [nutritionData, setNutritionData] = useState<{
-    calories: number;
-    protein: string;
-    carbs: string;
-    fat: string;
-    fiber: string;
-  } | null>(null);
+export default function Home() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [results, setResults] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setImage(URL.createObjectURL(file));
-      // Simulate nutrition data
-      setNutritionData({
-        calories: 520,
-        protein: "24g",
-        carbs: "58g",
-        fat: "22g",
-        fiber: "7g",
+  useEffect(() => {
+    if (selectedFile) {
+      const url = URL.createObjectURL(selectedFile);
+      setPreviewUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setPreviewUrl(null);
+    }
+  }, [selectedFile]);
+
+  const handleUpload = async () => {
+    if (!selectedFile) return alert("Please select an image first!");
+
+    const formData = new FormData();
+    formData.append("file", selectedFile);
+
+    setLoading(true);
+    setResults([]);
+
+    try {
+      const res = await fetch("http://localhost:8000/predict", {
+        method: "POST",
+        body: formData,
       });
+
+      const data = await res.json();
+      const predictions = data.results || [];
+
+      const enrichedResults = await Promise.all(
+        predictions.map(async (item: any) => {
+          const cleanedFood = item.food.replace(/_/g, " ");
+          const foodDetails = await fetchNutritionData(cleanedFood);
+          const nutrients: any = {};
+
+          if (foodDetails) {
+            foodDetails.foodNutrients.forEach((nutrient: any) => {
+              const name = nutrient.nutrientName.toLowerCase();
+              const value = nutrient.value;
+
+              if (name.includes("protein")) nutrients.protein = `${value}g`;
+              if (name.includes("lipid")) nutrients.fat = `${value}g`;
+              if (name.includes("carbohydrate")) nutrients.carbs = `${value}g`;
+              if (name.includes("fiber")) nutrients.fiber = `${value}g`;
+              if (name.includes("sugars")) nutrients.sugars = `${value}g`;
+              if (name.includes("cholesterol"))
+                nutrients.cholesterol = `${value}mg`;
+              if (name.includes("sodium")) nutrients.sodium = `${value}mg`;
+              if (name.includes("energy")) nutrients.calories = `${value}`;
+            });
+          }
+
+          return {
+            food: cleanedFood,
+            confidence: item.confidence,
+            nutritionData: nutrients,
+          };
+        })
+      );
+
+      setResults(enrichedResults);
+    } catch (err) {
+      console.error("Upload or prediction failed:", err);
+      alert("Something went wrong while uploading or predicting.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleFitGoals = () => {
-    alert("Feature coming soon: personalized nutrition adjustments.");
-  };
-
   return (
-    <main className="p-6 max-w-6xl mx-auto text-gray-900 dark:text-gray-100">
-      <h1 className="text-3xl font-bold mb-4">Food Nutrition Analyzer</h1>
+    <div className="min-h-screen bg-gradient-to-br from-green-100 to-blue-100 py-12 px-8">
+      <div className="max-w-3xl mx-auto bg-white shadow-2xl rounded-3xl p-10">
+        <h1 className="text-4xl font-bold text-center mb-8 flex items-center justify-center gap-3">
+          <Utensils className="w-10 h-10 text-green-500" /> MacroVision
+        </h1>
 
-      <div className="flex flex-col lg:flex-row gap-6">
-        {/* Image Upload Card */}
-        <Card className="flex-1 bg-white border border-gray-200 ">
-          <CardContent className="flex flex-col gap-4 p-6">
-            <input
-              id="fileUpload"
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
+        <div className="border-2 border-dashed border-green-400 rounded-xl p-8 text-center">
+          {previewUrl && (
+            <img
+              src={previewUrl}
+              alt="Preview"
+              className="max-w-md mx-auto rounded-lg shadow-md mb-6"
             />
-            <label
-              htmlFor="fileUpload"
-              className="inline-block bg-black text-white px-4 py-2 rounded-lg cursor-pointer"
-            >
-              Upload Food Image
-            </label>
-            {image && (
-              <img
-                src={image}
-                alt="Uploaded food"
-                className="w-full max-w-md rounded-xl shadow-md"
-              />
-            )}
-          </CardContent>
-        </Card>
+          )}
 
-        {/* Nutrition Data Card */}
-        {nutritionData && (
-          <div>
-            <Card className="flex-1 bg-white dark:bg-white border border-black shadow-md">
-              <CardContent className="p-6 font-sans text-black">
-                <div className="border-b-8 border-black pb-2 mb-2">
-                  <h2 className="text-2xl font-extrabold uppercase">
-                    Nutrition Facts
-                  </h2>
-                </div>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+            className="mx-auto mb-6 block"
+          />
 
-                <div className="text-sm font-semibold mb-1">
-                  Serving Size 1 meal
-                </div>
-                <div className="border-b border-black my-1"></div>
+          <button
+            onClick={handleUpload}
+            disabled={loading}
+            className="bg-green-500 hover:bg-green-600 transition-all text-white px-6 py-3 rounded-full font-semibold inline-flex items-center gap-2"
+          >
+            {loading ? <Loader2 className="animate-spin" /> : <UploadCloud />}
+            {loading ? "Analyzing..." : "Upload & Predict"}
+          </button>
+        </div>
 
-                <div className="text-sm font-semibold mb-1">
-                  <span className="text-lg font-bold">Calories</span>:{" "}
-                  {nutritionData.calories}
-                </div>
-                <div className="border-b-4 border-black my-2"></div>
-
-                <ul className="text-sm space-y-1 font-medium">
+        {results.length > 0 && (
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+            {results.map((item, i) => (
+              <div key={i} className="bg-gray-50 p-6 rounded-xl shadow-md">
+                <h2 className="text-2xl font-semibold capitalize mb-2">
+                  🍽️ {item.food} — {(item.confidence * 100).toFixed(1)}%
+                </h2>
+                <div className="border-b border-gray-300 my-2"></div>
+                <h3 className="font-bold text-lg uppercase mb-1">
+                  Nutrition Facts <p className="text-xs">Per 100 Grams</p>
+                </h3>
+                <ul className="text-gray-700">
                   <li>
-                    <strong>Total Fat:</strong> {nutritionData.protein}
+                    <strong>Calories:</strong>{" "}
+                    {item.nutritionData.calories || "—"}
                   </li>
                   <li>
-                    <em>Saturated Fat:</em> {nutritionData.protein}
+                    <strong>Total Fat:</strong> {item.nutritionData.fat || "—"}
                   </li>
                   <li>
-                    <em>Trans Fat:</em> {nutritionData.protein}
+                    <strong>Cholesterol:</strong>{" "}
+                    {item.nutritionData.cholesterol || "—"}
                   </li>
                   <li>
-                    <strong>Cholesterol:</strong> {nutritionData.protein}
+                    <strong>Sodium:</strong> {item.nutritionData.sodium || "—"}
                   </li>
                   <li>
-                    <strong>Sodium:</strong> {nutritionData.protein}
+                    <strong>Total Carbs:</strong>{" "}
+                    {item.nutritionData.carbs || "—"}
                   </li>
                   <li>
-                    <strong>Total Carbohydrate:</strong> {nutritionData.protein}
+                    <strong>Dietary Fiber:</strong>{" "}
+                    {item.nutritionData.fiber || "—"}
                   </li>
                   <li>
-                    <em>Dietary Fiber:</em> {nutritionData.protein}
+                    <strong>Sugars:</strong> {item.nutritionData.sugars || "—"}
                   </li>
                   <li>
-                    <em>Sugars:</em> {nutritionData.protein}
-                  </li>
-                  <li>
-                    <strong>Protein:</strong> {nutritionData.protein}
+                    <strong>Protein:</strong>{" "}
+                    {item.nutritionData.protein || "—"}
                   </li>
                 </ul>
-
-                <div className="border-t border-black mt-4 pt-2">
-                  <Button
-                    onClick={handleFitGoals}
-                    className="mt-4 bg-black text-white hover:bg-gray-800"
-                  >
-                    Make This Fit My Goals
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <div>
-              <div className="flex justify-center gap-10 mt-10">
-                <Button onClick={(e) => setShowLoginMessage(true)}>
-                  Save Meal
-                </Button>
-                <Button>Retake Photo</Button>
               </div>
-              {showLoginMessage && (
-                <div className="text-center mt-5">Login to save your meal!</div>
-              )}
-            </div>
-            
+            ))}
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 }

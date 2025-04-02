@@ -9,7 +9,6 @@ import { uploadMealImage } from "@/lib/uploadMealImage";
 import { storeMeal } from "@/lib/storeMeal";
 import { useRouter } from "next/navigation";
 import { Link } from "lucide-react";
-import NutritionSearch from "@/components/NutritionSearch";
 
 export default function Page() {
   const router = useRouter();
@@ -179,7 +178,6 @@ export default function Page() {
           </div>
         )}
       </div>
-      <NutritionSearch />
     </main>
   );
 }
